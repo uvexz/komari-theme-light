@@ -56,6 +56,14 @@ export function NodeCard({ node, onViewCharts }: NodeCardProps) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }, []);
 
+  const formatSpeed = useMemo(() => (bytesPerSecond: number): string => {
+    if (bytesPerSecond === 0) return '0 B/s';
+    const k = 1024;
+    const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+    const i = Math.floor(Math.log(bytesPerSecond) / Math.log(k));
+    return parseFloat((bytesPerSecond / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }, []);
+
   const formatUptime = useMemo(() => (seconds: number): string => {
     const days = Math.floor(seconds / 86400);
     const hours = Math.floor((seconds % 86400) / 3600);
@@ -172,9 +180,11 @@ export function NodeCard({ node, onViewCharts }: NodeCardProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 mt-2">
-          <Badge variant="outline" className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border-blue-200">
-            {node.group}
-          </Badge>
+          {node.group && (
+            <Badge variant="outline" className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border-blue-200">
+              {node.group}
+            </Badge>
+          )}
 
           {tagList.length > 0 && (
             <div className="flex flex-wrap gap-1 max-w-full">
@@ -263,6 +273,30 @@ export function NodeCard({ node, onViewCharts }: NodeCardProps) {
                   className={`h-2.5 transition-all duration-500 ${getProgressColor(diskStatus)}`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent h-2.5 rounded-full pointer-events-none opacity-0 group-hover/disk:opacity-100 transition-opacity duration-300"></div>
+              </div>
+            </div>
+
+            {/* 网络速度 */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Network className="h-4 w-4 text-purple-500 transition-colors duration-300" />
+                  <span className="text-sm font-medium">网络</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors duration-200">
+                  <span className="text-xs text-muted-foreground">↑ 上传</span>
+                  <span className="text-xs font-bold text-blue-600">
+                    {formatSpeed(stats.network.up)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors duration-200">
+                  <span className="text-xs text-muted-foreground">↓ 下载</span>
+                  <span className="text-xs font-bold text-green-600">
+                    {formatSpeed(stats.network.down)}
+                  </span>
+                </div>
               </div>
             </div>
           </>

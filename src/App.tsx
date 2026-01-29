@@ -5,7 +5,7 @@ import { WebSocketStatus } from './components/WebSocketStatus'
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
 import { Button } from './components/ui/button'
 import { useNodes } from './hooks/useNodes'
-import { Activity, Server, AlertCircle, ArrowLeft, Settings } from 'lucide-react'
+import { Activity, Server, AlertCircle, ArrowLeft, Settings, Network } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { apiService } from './services/api'
 import './App.css'
@@ -43,6 +43,45 @@ function App() {
   const onlineCount = getOnlineCount();
   const offlineCount = getOfflineCount();
   const groups = getGroups();
+
+  // 计算所有节点的网络统计
+  const getTotalNetworkStats = () => {
+    let totalUp = 0;
+    let totalDown = 0;
+    let totalUpTraffic = 0;
+    let totalDownTraffic = 0;
+
+    nodes.forEach(node => {
+      if (node.status === 'online' && node.stats?.network) {
+        totalUp += node.stats.network.up || 0;
+        totalDown += node.stats.network.down || 0;
+        totalUpTraffic += node.stats.network.totalUp || 0;
+        totalDownTraffic += node.stats.network.totalDown || 0;
+      }
+    });
+
+    return { totalUp, totalDown, totalUpTraffic, totalDownTraffic };
+  };
+
+  const networkStats = getTotalNetworkStats();
+
+  // 格式化网络速度，自动选择合适的单位
+  const formatSpeed = (bytesPerSecond: number): string => {
+    if (bytesPerSecond === 0) return '0 B/s';
+    const k = 1024;
+    const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+    const i = Math.floor(Math.log(bytesPerSecond) / Math.log(k));
+    return parseFloat((bytesPerSecond / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  // 格式化流量，自动选择合适的单位
+  const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   const handleViewCharts = (nodeUuid: string, nodeName: string) => {
     setSelectedNode({ uuid: nodeUuid, name: nodeName });
@@ -95,7 +134,7 @@ function App() {
           /* 节点列表视图 */
           <>
             {/* 统计概览 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
               <Card className="border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-shadow duration-300">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -161,6 +200,34 @@ function App() {
                         需要检查
                       </span>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-purple-500 shadow-sm hover:shadow-md transition-shadow duration-300">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                    网络统计
+                  </CardTitle>
+                  <Network className="h-5 w-5 text-purple-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl font-bold text-purple-600 mb-1">
+                    ↑ {formatSpeed(networkStats.totalUp)}
+                  </div>
+                  <div className="text-xl font-bold text-purple-600 mb-5">
+                    ↓ {formatSpeed(networkStats.totalDown)}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-xs text-muted-foreground">
+                      总上传: {formatBytes(networkStats.totalUpTraffic)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-xs text-muted-foreground">
+                      总下载: {formatBytes(networkStats.totalDownTraffic)}
+                    </p>
                   </div>
                 </CardContent>
               </Card>

@@ -16,6 +16,9 @@ export function ThemeSwitcher() {
     { id: 'green-mountain' as const, name: '青山' },
     { id: 'blue-water' as const, name: '绿水' },
     { id: 'night' as const, name: '夜晚' },
+    { id: 'material-indigo' as const, name: 'Material Indigo' },
+    { id: 'material-pink' as const, name: 'Material Pink' },
+    { id: 'material-teal' as const, name: 'Material Teal' },
   ];
 
   return (

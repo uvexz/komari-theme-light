@@ -1,0 +1,53 @@
+name: Build and Upload Artifacts
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'yarn'
+        
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+      
+    - name: Build project
+      run: yarn build
+      
+    - name: Create distribution package
+      run: |
+        zip -r komari-theme-light.zip dist/ komari-theme.json preview.png
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: komari-theme-light
+        path: |
+          dist/
+          komari-theme.json
+          preview.png
+          komari-theme-light.zip
+        retention-days: 30
+        
+    - name: Upload release package
+      uses: actions/upload-artifact@v4
+      with:
+        name: komari-theme-light-package
+        path: komari-theme-light.zip
+        retention-days: 90

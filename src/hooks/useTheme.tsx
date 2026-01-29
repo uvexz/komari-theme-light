@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-export type Theme = 'clean' | 'sunrise' | 'green-mountain' | 'blue-water' | 'night';
+export type Theme = 'clean' | 'sunrise' | 'green-mountain' | 'blue-water' | 'night' | 'material-indigo' | 'material-pink' | 'material-teal';
 
 interface ThemeContextType {
   theme: Theme;
@@ -15,7 +15,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // 从 localStorage 读取保存的主题
     const savedTheme = localStorage.getItem('komari-theme') as Theme;
-    if (savedTheme && ['clean', 'sunrise', 'green-mountain', 'blue-water', 'night'].includes(savedTheme)) {
+    if (savedTheme && ['clean', 'sunrise', 'green-mountain', 'blue-water', 'night', 'material-indigo', 'material-pink', 'material-teal'].includes(savedTheme)) {
       setTheme(savedTheme);
     }
   }, []);
